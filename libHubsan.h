@@ -19,6 +19,7 @@ public:
 	void txPacket(byte *ppacket);
 	void rxPacket(byte *ppacket);
 	void getChecksum(byte *ppacket);
+	void printPacket(const char* msg, byte* packet);
 private:
 	libA7105 a7105;
 	byte _channel;

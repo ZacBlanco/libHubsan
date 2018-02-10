@@ -221,9 +221,27 @@ void libHubsan::init(int cspin)
 	Serial.println(" - Selected Channel: 0x" + String(_channel,HEX));
 	a7105.writeRegister(A7105_28_TX_TEST,0x1F); // Set TX test Register - TX output: -4.8dBm, current: 14.9mA.
 	a7105.writeRegister(A7105_19_RX_GAIN_I,0x9B); // Set RX Gain register - Manual, Mixer gain: 6dB, LNA gain: 6dB
+	byte data = 0x00;
+	a7105.readRegister(A7105_28_TX_TEST, data);
+	Serial.print("tx gain reg: ");
+	Serial.println(data, HEX);
 	a7105.writeRegister(A7105_0F_PLL_I,_channel); // Set PLL Register 1 - Select Channel Offset to channel with the HIGHEST average RSSI from the scanning
 	a7105.sendStrobe(A7105_PLL);
 	a7105.sendStrobe(A7105_STANDBY);
+}
+
+void libHubsan::printPacket(const char* msg, byte* packet)
+{
+	int i;
+	Serial.print(msg);
+	Serial.print(": ");
+	for(i=0; i < 16;i++)
+	{
+		Serial.print("0x");
+		Serial.print(packet[i], HEX);
+		Serial.print(" ");
+	}
+	Serial.println("");
 }
 
 void libHubsan::bind()
@@ -248,14 +266,17 @@ void libHubsan::bind()
 	getChecksum(_txpacket);
 
 	// Transmit ANNOUNCE Packet until a response is heard.
+	Serial.println("Announce Tx");
 	while (true){
 		txPacket(_txpacket);
+		printPacket("Announce packet", _txpacket);
 		a7105.sendStrobe(A7105_RX); // Switch to RX mode.
 		bool response = false;
 		for (int i=0;i<15;i++){ // Listen to see if there was a response.
 			a7105.readRegister(A7105_00_MODE,status_byte);
 			if (CHECK_BIT(status_byte,0)==false){
 				response = true;
+				Serial.println("Got response to ANNOUNCE");
 				break;
 			}
 			delay(1);
@@ -266,18 +287,22 @@ void libHubsan::bind()
 		a7105.sendStrobe(A7105_STANDBY);
 	}
 	rxPacket(_rxpacket);
+	printPacket("Announce Rx", _rxpacket);
 
 	// Escalate handshake.
 	_txpacket[0] = 0x03; // Bind Level = 01 (Unbound - BEACON lvl 3 Packet)
+	Serial.println("Escalating bind to Level 01, BEACON lvl 3");
 	getChecksum(_txpacket);
 	while (true){
 		txPacket(_txpacket);
+		printPacket("Escalation 1 Tx", _txpacket);
 		a7105.sendStrobe(A7105_RX); // Switch to RX mode.
 		bool response = false;
 		for (int i=0;i<15;i++){ // Listen to see if there was a response.
 			a7105.readRegister(A7105_00_MODE,status_byte);
 			if (CHECK_BIT(status_byte,0)==false){
 				response = true;
+				Serial.println("Got Response to BEACON lvl 3 packet");
 				break;
 			}
 			delay(1);
@@ -288,15 +313,18 @@ void libHubsan::bind()
 		a7105.sendStrobe(A7105_STANDBY);
 	}
 	rxPacket(_rxpacket);
+	printPacket("Escalation 1 Rx", _rxpacket);
 
 	// Set IDCode to the session value.
 	a7105.writeRegister(A7105_06_ID_DATA,4,_sessionid);
 
 	// Commence confirmation handshake.
 	_txpacket[0] = 0x01; // Bind Level = 01 (Mid-Bind - Confirmation of IDCODE change packet)
+	Serial.println("Escalating to MidBind");
 	getChecksum(_txpacket);
 	while (true){
 		txPacket(_txpacket);
+		printPacket("MidBind Tx", _txpacket);
 		a7105.sendStrobe(A7105_RX); // Switch to RX mode.
 		bool response = false;
 		for (int i=0;i<15;i++){ // Listen to see if there was a response.
@@ -313,14 +341,17 @@ void libHubsan::bind()
 		a7105.sendStrobe(A7105_STANDBY);
 	}
 	rxPacket(_rxpacket);
+	printPacket("MidBind Rx", _rxpacket);
 
 	// Commence full handshake escalation.
+	Serial.println("commencing full handshake");
 	_txpacket[0] = 0x09;
 	for (int i=0;i<10;i++){
 		_txpacket[2] = byte(i);
 		getChecksum(_txpacket);
 		while (true){
 			txPacket(_txpacket);
+			printPacket("Full Handshake Tx", _txpacket);
 			a7105.sendStrobe(A7105_RX); // Switch to RX mode.
 			bool response = false;
 			for (int i=0;i<15;i++){ // Listen to see if there was a response.
@@ -337,9 +368,12 @@ void libHubsan::bind()
 			a7105.sendStrobe(A7105_STANDBY);
 		}
 		rxPacket(_rxpacket);
+		printPacket("Full Handshake Rx", _rxpacket);
+
 	}
 	a7105.writeRegister(A7105_1F_CODE_I,0x0F); // Enable FEC.
 	a7105.sendStrobe(A7105_STANDBY);
+	Serial.println("Binding finished");
 }
 
 void libHubsan::txPacket(byte ppacket[])
@@ -361,7 +395,6 @@ void libHubsan::txPacket(byte ppacket[])
 void libHubsan::rxPacket(byte ppacket[])
 {
 	// Read received packet from FIFO buffer.
-
 	a7105.sendStrobe(A7105_RST_RDPTR); // Reset the RX pointer.
 	a7105.readRegister(A7105_05_FIFO_DATA,16,ppacket); // Read received packet.
 }
