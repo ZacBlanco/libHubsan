@@ -20,7 +20,7 @@ int CSPIN = 45;
 int smooth = 0; // control interpolation/smoothing
 libHubsan hubsan;
 libA7105 a7105;
-
+int pc = SCK;
 void setup() {
   // Initialize Serial comms
   Serial.begin(115200);
@@ -34,11 +34,30 @@ void setup() {
   // Serial.println("** Commencing Bind Choreography **");
   // hubsan.bind();
   // Serial.println("** Status: READY. **");
+  SPI.begin();    
+  byte a1 = 0xB5;
+  byte a2 = 0xC5;
+  a2 = SPI.transfer(a1);
+  Serial.println(digitalRead(MOSI));
+  Serial.println(digitalRead(MISO));
+  Serial.println(a2, HEX);
+  SPI.end();
 }
 
 void loop() {
-  a7105.setupA7105(CSPIN);
-  delay(5000);
+  // a7105.setupA7105(CSPIN);
+  // byte a;
+  // a = SPI.transfer(0xB);
+  // Serial.println(a, HEX);
+  // a = SPI.transfer(0);
+  // Serial.println(a, HEX);
+  // a = SPI.transfer(0);
+  // Serial.println(a, HEX);
+  // a = SPI.transfer(0);
+  // Serial.println(a, HEX);
+  // a = SPI.transfer(0);
+  // Serial.println(a, HEX);
+  delay(10000);
 }
 
 // void updateControlPacket() {

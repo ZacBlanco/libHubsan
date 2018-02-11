@@ -5,10 +5,11 @@
 #ifndef libA7105_H
 #define libA7105_H
 
-#include "Arduino.h"
-#include <SPI.h>
+#include "spi.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
+
+typedef uint8_t byte;
 
 enum {
    A7105_00_MODE           = 0x00,
