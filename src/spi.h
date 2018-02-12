@@ -11,6 +11,8 @@
 #define SPI_CHIP0 BCM2835_SPI_CS0
 #define SPI_CHIP1 BCM2835_SPI_CS1
 
+typedef char byte;
+
 /**
   Initialize the BCM and containing SPI library.
   Returns:
@@ -45,8 +47,8 @@ void SPI_settings(uint8_t bit_order,
 */
 void SPI_chipSelect(uint8_t cs);
 
-uint8_t SPI_transfer(uint8_t byte);
+uint8_t SPI_transfer(byte data);
 
-void SPI_transfern(char* buf, uint32_t len);
+void SPI_transfern(byte* buf, uint32_t len);
 
 #endif

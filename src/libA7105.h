@@ -5,11 +5,11 @@
 #ifndef libA7105_H
 #define libA7105_H
 
+#include <stdlib.h>
+#include <string.h>
 #include "spi.h"
 
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
-
-typedef uint8_t byte;
 
 enum {
    A7105_00_MODE           = 0x00,
@@ -81,9 +81,9 @@ class libA7105
 public:
 	libA7105();
 	void setupA7105(int cspin); // Setup SPI characteristics. 4-wire configuration.
-	void readRegister(byte address, int len, byte *pdata_r); // Read control reg - multiple bytes.
-	void readRegister(byte address, byte &pdata_r); // Read control reg - single byte.
-	void writeRegister(byte address, int len, byte *pdata_w); // Write control reg - multiple bytes.
+	void readRegister(byte address, uint32_t len, byte* pdata_r); // Read control reg - multiple bytes.
+	void readRegister(byte address, byte* pdata_r); // Read control reg - single byte.
+	void writeRegister(byte address, uint32_t len, byte* pdata_w); // Write control reg - multiple bytes.
 	void writeRegister(byte address, byte pdata_w); // Write control reg - single byte.
   void sendStrobe(enum A7105_State); // Send STROBE signal.
 private:

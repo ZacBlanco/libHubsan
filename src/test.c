@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "spi.h"
 #include "libA7105.h"
-typedef uint8_t byte;
 
 libA7105 chip;
 

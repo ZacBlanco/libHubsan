@@ -36,12 +36,12 @@ void SPI_chipSelect(uint8_t cs)
   bcm2835_spi_chipSelect(cs);
 }
 
-uint8_t SPI_transfer(uint8_t byte)
+uint8_t SPI_transfer(byte data)
 {
-  return bcm2835_spi_transfer(byte);
+  return bcm2835_spi_transfer(data);
 }
 
-void SPI_transfern(char* buf, uint32_t len)
+void SPI_transfern(byte* buf, uint32_t len)
 {
   bcm2835_spi_transfern(buf, len);
   return;
