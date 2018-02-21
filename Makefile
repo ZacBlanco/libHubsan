@@ -1,7 +1,8 @@
-CC=g++
+CC=gcc
+CXX=g++
 LIBS=bcm2835
 
-all: spi_test spi.a
+all: spi_test spi.a spi.so
 
 clean:
 	rm -rf *.o *.a src/*.o src/*.a  bin/
@@ -16,17 +17,25 @@ test: spi_test
 
 spi.a: spi.o
 	cd src && ar rcs spi.a spi.o
+	mv src/spi.a bin/
 
-spi_test: spi.o libA7105.o test.o bin
-	cd src && $(CC) test.o spi.o libA7105.o -o spi_test -l$(LIBS)
-	#$(CC) -Wall -l$(LIBS) spi.a test.o
+spi.so: spi.o
+	cd src && $(CC) -shared -o spi.so -lbcm2835 spi.o
+	mv src/spi.so bin/
+
+spi_test: bin test.o libHubsan.o libA7105.o spi.o
+	cd src && $(CC) test.o libHubsan.o libA7105.o spi.o -o spi_test -l$(LIBS)
 	mv src/spi_test bin/
-	
+
+
+libHubsan.o:
+	cd src && $(CC) -Wall -fPIC -c libHubsan.c
+
 libA7105.o:
-	cd src && $(CC) -Wall -c libA7105.cpp
+	cd src && $(CC) -Wall -fPIC -c libA7105.c
 
 test.o:
-	cd src && $(CC) -Wall -c test.c
+	cd src && $(CC) -Wall -fPIC -c test.c
 
 spi.o:
-	cd src && $(CC) -Wall -c -lbcm2835 spi.c
+	cd src && $(CC) -Wall -fPIC -c spi.c

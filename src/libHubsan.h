@@ -7,25 +7,23 @@
 #ifndef libHubsan_H
 #define libHubsan_H
 
-#include "Arduino.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <time.h>
 #include "libA7105.h"
 
-class libHubsan
-{
-public:
-	libHubsan();
-	void init(int cspin);
-	void bind();
-	void txPacket(byte *ppacket);
-	void rxPacket(byte *ppacket);
-	void getChecksum(byte *ppacket);
-	void printPacket(const char* msg, byte* packet);
-private:
-	libA7105 a7105;
-	byte _channel;
-	byte _sessionid[4];
-	byte _txpacket[16];
-	byte _rxpacket[16];
-};
+void libHubsan_init(int cspin);
+void libHubsan_bind();
+void libHubsan_txPacket(byte *ppacket);
+void libHubsan_rxPacket(byte *ppacket);
+void libHubsan_getChecksum(byte *ppacket);
+void libHubsan_printPacket(const char* msg, byte* packet);
+
+byte _channel;
+byte _sessionid[4];
+byte _txpacket[16];
+byte _rxpacket[16];
+
 
 #endif
