@@ -106,6 +106,7 @@ void libHubsan_init(int cspin)
 	// CALIBRATION TESTS
 	byte test_result; // var to hold the test results for each calibration test in turn.
 	int timeout;	  // var to hold timeout watchdog counter.
+	int i, j; // loop iterator
 
 	// IF Filter Bank Calibration START.
 	printf("Performing IF Filter Bank Calibration Test.\n");
@@ -214,19 +215,19 @@ void libHubsan_init(int cspin)
 	// Cycle through the 12 channels and identify the best one to use.
 	printf("Scanning Channel RSSI values: \n");
 	long chan_rssi[12] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-	for (int i = 0; i < 12; i++)
+	for (i = 0; i < 12; i++)
 	{
 		a7105_writeRegister1(A7105_0F_PLL_I, _channels[i]); // Set PLL Register 1 - Select Channel Offset.
 		a7105_sendStrobe(A7105_STATE_PLL);
 		a7105_sendStrobe(A7105_STATE_RX);
-		for (int j = 0; j < 15; j++)
+		for (j = 0; j < 15; j++)
 		{
 			a7105_readRegister1(A7105_1D_RSSI_THRESH, &test_result);
 			chan_rssi[i] = (chan_rssi[i] + test_result);
 		}
 	}
 	int temp_rssi = 0;
-	for (int i = 0; i < 12; i++)
+	for (i = 0; i < 12; i++)
 	{
 		if (chan_rssi[i] > temp_rssi)
 		{
@@ -258,23 +259,24 @@ void libHubsan_printPacket(const char *msg, byte *packet)
 
 void libHubsan_bind()
 {
+	int i; //loop iterator
 	printf("Sending beacon packets...\n");
 	byte status_byte = 0x00; // variable to hold W/R register data.
 
 	// Generate 4 byte random session id.
 	srand(time(NULL));
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		_sessionid[i] = rand() % 255;
 	}
 
-	for (int i = 0; i < 16; i++)
+	for (i = 0; i < 16; i++)
 	{ // Initialize packet array.
 		_txpacket[i] = 0x00;
 	}
 	_txpacket[0] = 0x01;	 // Bind level = 01 (Unbound - BEACON lvl 1 Packet)
 	_txpacket[1] = _channel; // Selected Channel
-	for (int i = 0; i < 4; i++)
+	for (i = 0; i < 4; i++)
 	{
 		_txpacket[i + 2] = _sessionid[i];
 	}
@@ -288,7 +290,7 @@ void libHubsan_bind()
 		libHubsan_printPacket("Announce packet", _txpacket);
 		a7105_sendStrobe(A7105_STATE_RX); // Switch to RX mode.
 		int response = 0;
-		for (int i = 0; i < 15; i++)
+		for (i = 0; i < 15; i++)
 		{ // Listen to see if there was a response.
 			a7105_readRegister1(A7105_00_MODE, &status_byte);
 			if (CHECK_BIT(status_byte, 0) == 0)
@@ -318,7 +320,7 @@ void libHubsan_bind()
 		libHubsan_printPacket("Escalation 1 Tx", _txpacket);
 		a7105_sendStrobe(A7105_STATE_RX); // Switch to RX mode.
 		int response = 0;
-		for (int i = 0; i < 15; i++)
+		for (i = 0; i < 15; i++)
 		{ // Listen to see if there was a response.
 			a7105_readRegister1(A7105_00_MODE, &status_byte);
 			if (CHECK_BIT(status_byte, 0) == 0)
@@ -351,7 +353,7 @@ void libHubsan_bind()
 		libHubsan_printPacket("MidBind Tx", _txpacket);
 		a7105_sendStrobe(A7105_STATE_RX); // Switch to RX mode.
 		int response = 0;
-		for (int i = 0; i < 15; i++)
+		for (i = 0; i < 15; i++)
 		{ // Listen to see if there was a response.
 			a7105_readRegister1(A7105_00_MODE, &status_byte);
 			if (CHECK_BIT(status_byte, 0) == 0)
@@ -373,7 +375,7 @@ void libHubsan_bind()
 	// Commence full handshake escalation.
 	printf("commencing full handshake\n");
 	_txpacket[0] = 0x09;
-	for (int i = 0; i < 10; i++)
+	for (i = 0; i < 10; i++)
 	{
 		_txpacket[2] = (byte)i;
 		libHubsan_getChecksum(_txpacket);
@@ -383,7 +385,7 @@ void libHubsan_bind()
 			libHubsan_printPacket("Full Handshake Tx", _txpacket);
 			a7105_sendStrobe(A7105_STATE_RX); // Switch to RX mode.
 			int response = 0;
-			for (int i = 0; i < 15; i++)
+			for (i = 0; i < 15; i++)
 			{ // Listen to see if there was a response.
 				a7105_readRegister1(A7105_00_MODE, &status_byte);
 				if (CHECK_BIT(status_byte, 0) == 0)
@@ -437,7 +439,8 @@ void libHubsan_getChecksum(byte ppacket[])
 	// Calculate checksum value. 256-(Sum of packet bytes 0-15, mod 256).
 
 	int sum = 0;
-	for (int i = 0; i < 15; i++)
+	int i;
+	for (i = 0; i < 15; i++)
 	{
 		sum = sum + (int)ppacket[i];
 	}
