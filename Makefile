@@ -2,7 +2,7 @@ CC=gcc
 CXX=g++
 LIBS=bcm2835
 
-all: spi_test spi.a spi.so
+all: spi_test spi.a spi.so libhubsan.so
 
 clean:
 	rm -rf *.o *.a src/*.o src/*.a  bin/
@@ -20,8 +20,12 @@ spi.a: spi.o
 	mv src/spi.a bin/
 
 spi.so: spi.o
-	cd src && $(CC) -shared -o spi.so -lbcm2835 spi.o
+	cd src && $(CC) -shared -o spi.so -Wl,--whole-archive -lbcm2835 -Wl,--no-whole-archive spi.o
 	mv src/spi.so bin/
+
+libhubsan.so: spi.o libHubsan.o libA7105.o
+	cd src && $(CC) -shared -o libhubsan.so -Wl,--whole-archive -lbcm2835 -Wl,--no-whole-archive spi.o libHubsan.o libA7105.o
+	mv src/libhubsan.so bin/
 
 spi_test: bin test.o libHubsan.o libA7105.o spi.o
 	cd src && $(CC) test.o libHubsan.o libA7105.o spi.o -o spi_test -l$(LIBS)

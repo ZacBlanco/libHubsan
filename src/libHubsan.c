@@ -8,7 +8,7 @@ void libHubsan_init(int cspin)
 	a7105_setup(cspin); // Configure A7105 for SPI comms.
 
 	// Set ID Code Register (x06) to "55 20 10 41".
-	printf("here\n");
+	//printf("here\n");
 	byte idcode[4] = {0x55, 0x20, 0x10, 0x41};
 	a7105_writeRegister2(A7105_06_ID_DATA, 4, idcode);
 	// Set Mode Control Register (x01) Auto RSSI measurement, Auto IF Offset, FIFO mode enabled.
@@ -249,17 +249,17 @@ void libHubsan_init(int cspin)
 void libHubsan_printPacket(const char *msg, byte *packet)
 {
 	int i;
-	printf("%s: ", msg);
+	//printf("%s: ", msg);
 	for (i = 0; i < 16; i++)
 	{
-		printf("0x%x ", packet[i]);
+	//	printf("0x%x ", packet[i]);
 	}
-	printf("\n");
+	//printf("\n");
 }
 
 void libHubsan_bind()
 {
-	int i; //loop iterator
+	int i, j; //loop iterator
 	printf("Sending beacon packets...\n");
 	byte status_byte = 0x00; // variable to hold W/R register data.
 
@@ -377,15 +377,18 @@ void libHubsan_bind()
 	_txpacket[0] = 0x09;
 	for (i = 0; i < 10; i++)
 	{
+		printf("before _txpacket\n");
 		_txpacket[2] = (byte)i;
+		printf("after _txpacket\n");		
 		libHubsan_getChecksum(_txpacket);
 		while (1)
 		{
+			printf("inside while(1)\n");
 			libHubsan_txPacket(_txpacket);
 			libHubsan_printPacket("Full Handshake Tx", _txpacket);
 			a7105_sendStrobe(A7105_STATE_RX); // Switch to RX mode.
 			int response = 0;
-			for (i = 0; i < 15; i++)
+			for (j = 0; j < 15; j++)
 			{ // Listen to see if there was a response.
 				a7105_readRegister1(A7105_00_MODE, &status_byte);
 				if (CHECK_BIT(status_byte, 0) == 0)
@@ -409,10 +412,16 @@ void libHubsan_bind()
 	printf("Binding finished\n");
 }
 
-void libHubsan_txPacket(byte ppacket[])
+void libHubsan_txPacket(byte* ppacket)
 {
 	// Transmit packet and wait until it has completed sending before returning.
-
+	int i;
+	printf("TX Packet: ");
+	for (i = 0; i < 16; i++)
+	{
+		printf("\\x%x", ppacket[i]);
+	}
+	printf("\n");
 	byte status_byte;
 	a7105_sendStrobe(A7105_STATE_RST_WRPTR); // Reset FIFO Write Pointer.
 	a7105_writeRegister2(A7105_05_FIFO_DATA, 16, ppacket);
@@ -427,14 +436,14 @@ void libHubsan_txPacket(byte ppacket[])
 	}
 }
 
-void libHubsan_rxPacket(byte ppacket[])
+void libHubsan_rxPacket(byte* ppacket)
 {
 	// Read received packet from FIFO buffer.
-	a7105_sendStrobe(A7105_STATE_RST_RDPTR);					 // Reset the RX pointer.
+	a7105_sendStrobe(A7105_STATE_RST_RDPTR); // Reset the RX pointer.
 	a7105_readRegister2(A7105_05_FIFO_DATA, 16, ppacket); // Read received packet.
 }
 
-void libHubsan_getChecksum(byte ppacket[])
+void libHubsan_getChecksum(byte* ppacket)
 {
 	// Calculate checksum value. 256-(Sum of packet bytes 0-15, mod 256).
 
@@ -444,5 +453,11 @@ void libHubsan_getChecksum(byte ppacket[])
 	{
 		sum = sum + (int)ppacket[i];
 	}
+	printf("Checksum is %x\n", (byte) (256 - (sum % 256)));
 	ppacket[15] = (byte) (256 - (sum % 256));
+	for (i = 0; i < 16; i++)
+	{
+		printf("\\x%x", ppacket[i]);
+	}
+	printf("\n");
 }
