@@ -1,3 +1,4 @@
 .vscode/arduino.json
 .vscode/*
 **/env/**
+**/.DS_Store
