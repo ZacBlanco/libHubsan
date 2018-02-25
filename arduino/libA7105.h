@@ -11,7 +11,6 @@
 #define CHECK_BIT(var,pos) ((var) & (1<<(pos)))
 
 enum {
-   A7105_FREQ_MAX           = 8000000,
    A7105_00_MODE           = 0x00,
    A7105_01_MODE_CONTROL   = 0x01,
    A7105_02_CALIB_CONT     = 0x02,
@@ -91,3 +90,4 @@ private:
 };
 
 #endif
+

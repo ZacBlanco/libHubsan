@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 # ---------------------------------------------------------------
 # Hubsan X4 H107L - Python head-end for Arduino Hubsan Controller
 # ---------------------------------------------------------------
@@ -47,7 +45,7 @@ def main():
 	print("\nHubsan X4 H107L - Python head-end for Arduino Hubsan Controller.")
 	print("----------------------------------------------------------------")
 
-	print("> Loading config settings...\n")
+	print( "> Loading config settings...\n")
 	config = configparser.ConfigParser()
 	config.read('pyHubsan.config')
 
@@ -59,13 +57,13 @@ def main():
 		ports.append(port)
 		i+=1
 	if (len(ports)==0):
-		print("Error: No Arduino Serial ports detected! Try reconnecting the USB cable.")
+		print( "Error: No Arduino Serial ports detected! Try reconnecting the USB cable.")
 		sys.exit(1)
 	portnum = input("\n  Enter the number of the desired COM port: ")
 	comport = ports[portnum]
 	print("\n- [%s] Selected." % comport[0])
 
-	print("\n> Opening Serial port...")
+	print( "\n> Opening Serial port...")
 	ser = serial.Serial(comport[0],115200,timeout=1)
 	print(" - Successful.")
 
@@ -73,7 +71,7 @@ def main():
 	print("------------------")
 	while True:
 		line = ser.readline().strip()
-		if (line != ""):
+		if (line <> ""):
 			print(" %s" % line)	
 		if (line == "** Status: READY. **"):
 			break
@@ -97,7 +95,7 @@ def main():
 	window = pygame.display.set_mode((640,480))
 	pygame.display.set_caption("Hubsan X4 H107L Python Controller v0.1")
 	clock = pygame.time.Clock()
-	
+
 	print("\nTHR:YAW:PIT:ROL\n---------------")
 
 	while True:
@@ -131,8 +129,8 @@ def main():
 					roll = def_r - (255-def_r)/3
 				if (event.key == pygame.K_q):
 					smooth = toggleSmoothing(smooth)
-				if (event.key == pygame.K_e):
-					flip(ser,def_p,throttle,"2")
+				#if (event.key == pygame.K_e):
+					#flip(ser,def_p,throttle,"2")
 			if (event.type == pygame.KEYUP):
 				if (event.key == pygame.K_w):
 					move_throttle = 0
@@ -158,31 +156,31 @@ def main():
 		if (throttle < 0): throttle = 0
 
 		# See if the control value has changed, and if so, send a control message.
-		if (throttle != last_t):
+		if (throttle <> last_t):
 			last_t = throttle
 			ser.write('0') # Control flag: Throttle
 			ser.write(chr(throttle))
 			sys.stdout.write("\r%03d:%03d:%03d:%03d" % (throttle,yaw,pitch,roll))
 			sys.stdout.flush()
-		if (yaw != last_y):
+		if (yaw <> last_y):
 			last_y = yaw
 			ser.write('1') # Control flag: Yaw
 			ser.write(chr(yaw))
 			sys.stdout.write("\r%03d:%03d:%03d:%03d" % (throttle,yaw,pitch,roll))
 			sys.stdout.flush()
-		if (pitch != last_p):
+		if (pitch <> last_p):
 			last_p = pitch
 			ser.write('2') # Control flag: Pitch
 			ser.write(chr(pitch))
 			sys.stdout.write("\r%03d:%03d:%03d:%03d" % (throttle,yaw,pitch,roll))
 			sys.stdout.flush()
-		if (roll != last_r):
+		if (roll <> last_r):
 			last_r = roll
 			ser.write('3') # Control flag: Roll
 			ser.write(chr(roll))
 			sys.stdout.write("\r%03d:%03d:%03d:%03d" % (throttle,yaw,pitch,roll))
 			sys.stdout.flush()
-		if (smooth != last_s):
+		if (smooth <> last_s):
 			last_s = smooth
 			ser.write('4') # Control flag: Toggle Smoothing
 			print(str(smooth))
